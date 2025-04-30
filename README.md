@@ -26,6 +26,24 @@ A LangChain-powered Retrieval-Augmented Generation (RAG) system that allows you 
 
 ---
 
+## 📘 About LangChain
+
+This project is built using **[LangChain](https://docs.langchain.com/)** — a framework designed to help developers build powerful applications with large language models (LLMs).
+
+LangChain simplifies tasks like:
+- Prompt engineering
+- Document loading and chunking
+- Embedding generation
+- Retrieval from vector stores
+- Orchestrating the LLM pipeline (RAG, chains, agents, etc.)
+
+If you're building any LLM-based app, LangChain is one of the most versatile and production-ready libraries to use.
+
+📖 **Explore LangChain documentation here:**  
+👉 [https://docs.langchain.com](https://docs.langchain.com)
+
+---
+
 ## 🛠️ Installation
 
 1. Clone the repository:
