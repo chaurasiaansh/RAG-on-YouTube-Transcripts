@@ -50,3 +50,7 @@ If you're building any LLM-based app, LangChain is one of the most versatile and
    ```bash
    git clone https://github.com/your-username/YouTube-RAG-Assistant.git
    cd YouTube-RAG-Assistant
+2. Install the requirements:
+   ```bash
+   pip install -r requirements.txt
+
