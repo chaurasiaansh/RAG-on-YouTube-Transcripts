@@ -1,0 +1,54 @@
+from langchain_google_genai import ChatGoogleGenerativeAI
+from dotenv import load_dotenv
+from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import FAISS
+from langchain_core.prompts import PromptTemplate
+from langchain_ollama import OllamaEmbeddings
+
+load_dotenv()
+model = ChatGoogleGenerativeAI(model='gemini-2.0-flash')
+
+# Step 1a - Indexing (Document Ingestion)
+video_id = "Gfr50f6ZBvo"
+try:
+    transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=["en"])
+    transcript = " ".join(chunk["text"] for chunk in transcript_list)
+except TranscriptsDisabled:
+    print("No captions available for this video.")
+    transcript = ""
+
+# Step 1b - Text Splitting
+splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+chunks = splitter.create_documents([transcript]) if transcript else []
+
+# Step 1c & 1d - Embedding Generation and Storing in Vector Store
+embeddings = OllamaEmbeddings(model="nomic-embed-text")
+vector_store = FAISS.from_documents(chunks, embeddings)
+
+# Step 2 - Retrieval
+retriever = vector_store.as_retriever(search_type="mmr", search_kwargs={"k": 4})
+
+# Step 3 - Augmentation
+llm = ChatGoogleGenerativeAI(model='gemini-2.0-flash')
+
+prompt = PromptTemplate(
+    template="""
+      You are a helpful assistant.
+      Answer ONLY from the provided transcript context.
+      If the context is insufficient, just say you don't know.
+
+      {context}
+      Question: {question}
+    """,
+    input_variables=['context', 'question']
+)
+
+question = "building block of biology is the topic discussed in this video? if yes then what was discussed"
+retrieved_docs = retriever.invoke(question)
+
+context_text = "\n\n".join(doc.page_content for doc in retrieved_docs)
+final_prompt = prompt.invoke({"context": context_text, "question": question})
+
+answer = llm.invoke(final_prompt)
+print(answer.content)
